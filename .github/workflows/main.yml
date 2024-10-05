@@ -16,14 +16,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install QEMU
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-user-static
-
       - name: Install dependencies
         run: |
+          sudo apt-get update
           sudo apt-get install -y build-essential cmake git libuv1-dev libssl-dev libhwloc-dev
+          sudo apt-get install -y gcc-arm-linux-gnueabi g++-arm-linux-gnueabi # ARMv7 编译器
+          sudo apt-get install -y gcc-arm-linux-gnueabi g++-arm-linux-gnueabi # ARM64 编译器
 
       - name: Download and extract source code
         run: |
@@ -34,15 +32,13 @@ jobs:
 
       - name: Build testformycode for ARMv7 or ARMv8
         run: |
+          cd testformycode/build
           if [ "${{ matrix.architecture }}" = "armv7" ]; then
-            cd testformycode/build
             cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv7.toolchain.cmake ..
-            make -j$(nproc)
           else
-            cd testformycode/build
             cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv8.toolchain.cmake ..
-            make -j$(nproc)
           fi
+          make -j$(nproc)
 
       - name: Upload binaries
         uses: actions/upload-artifact@v3
