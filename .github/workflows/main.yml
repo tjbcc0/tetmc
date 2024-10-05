@@ -25,25 +25,23 @@ jobs:
 
       - name: Build for ARM64
         run: |
-          docker run --rm --platform linux/arm64/v8 -v ${{ github.workspace }}:/workspace -w /workspace/ ~/testformycode \
-          arm64v8/ubuntu:18.04 /bin/bash -c "
+          docker run --rm --platform linux/arm64/v8 -v ${{ github.workspace }}:/workspace -w /workspace arm64v8/ubuntu:18.04 /bin/bash -c "
           apt-get update && \
           apt-get install -y git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget && \
           git clone https://github.com/mist2ke/testformycode.git && \
-          mkdir ~/testformycode/build && cd ~/testformycode/build && \
-          cmake .. && make -j$(nproc) && mv testformycode ~ && cd ~ && rm -rf testformycode
+          cd testformycode && \
+          mkdir build && cd build && \
+          cmake .. && make -j\$(nproc) && mv testformycode ~ && cd ~ && rm -rf testformycode
           "
 
       - name: Build for ARM32
         run: |
-          docker run --rm --platform linux/arm/v7 -v ${{ github.workspace }}:/workspace -w /workspace ~/testformycode \
-          arm32v7/ubuntu:18.04 /bin/bash -c "
+          docker run --rm --platform linux/arm/v7 -v ${{ github.workspace }}:/workspace -w /workspace arm32v7/ubuntu:18.04 /bin/bash -c "
           apt-get update && \
           apt-get install -y git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget && \
           git clone https://github.com/mist2ke/testformycode.git && \
-          cd ~/testformycode/scripts && chmod +x *.* && bash ./build_deps.sh && \
-          mkdir ~/testformycode/build && cd ~/testformycode/build && \
-          cmake .. -DARM_TARGET=7 -DXMRIG_DEPS=../scripts/deps && make -j$(nproc) && mv testformycode ~ && cd ~ && rm -rf testformycode
+          cd testformycode/scripts && chmod +x *.* && bash ./build_deps.sh && \
+          cd ../build && cmake .. -DARM_TARGET=7 -DXMRIG_DEPS=../scripts/deps && make -j\$(nproc) && mv testformycode ~ && cd ~ && rm -rf testformycode
           "
 
       - name: Run the project
