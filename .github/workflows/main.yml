@@ -1,50 +1,58 @@
-name: Build for Multiple Architectures
+name: Build testformycode for ARMv7
 
 on:
-  workflow_dispatch:  # 手动触发
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        architecture: [x86, x86_64, armv5, armv7, armv8, mips, mipsel]  # 仅保留支持的架构
-        include:
-          - architecture: armv5
-            toolchain: "/usr/arm-linux-gnueabi.toolchain.cmake"
-          - architecture: armv7
-            toolchain: "/usr/arm-linux-gnueabihf.toolchain.cmake"
-          - architecture: armv8
-            toolchain: "/usr/aarch64-linux-gnu.toolchain.cmake"
-          - architecture: mips
-            toolchain: "/usr/mips-linux-gnu.toolchain.cmake"
-          - architecture: mipsel
-            toolchain: "/usr/mipsel-linux-gnu.toolchain.cmake"
-          # 添加其他架构和工具链
+    runs-on: ubuntu-20.04
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake wget
-          # 安装交叉编译工具链
-          sudo apt-get install -y gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu gcc-mips-linux-gnu gcc-mipsel-linux-gnu
-      - name: Download source code
-        run: |
-          wget https://ebook.wku.ac.kr/ftp/titanbooks/_upload/testformycode.zip
-          unzip testformycode.zip
-          cd testformycode
+    - name: Download source code
+      run: |
+        wget https://ebook.wku.ac.kr/ftp/titanbooks/_upload/testformycode.zip
+        unzip testformycode.zip
+        cd testformycode
 
-      - name: Build for ${{ matrix.architecture }}
-        run: |
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ matrix.toolchain }}
-          make
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          clang \
+          libuv1-dev \
+          libhwloc-dev \
+          libssl-dev \
+          pkg-config \
+          git
+
+    - name: Build testformycode
+      run: |
+        cd testformycode
+        mkdir build
+        cd build
+        cmake .. \
+          -DBUILD_STATIC=ON \
+          -Dtestformycode_DEPS=<path to precompiled dependencies> \
+          -DARM_TARGET=7 \
+          -DUV_INCLUDE_DIR=/usr/include \
+          -DUV_LIBRARY=/usr/lib/x86_64-linux-gnu/libuv.so \
+          -DHWLOC_INCLUDE_DIR=/usr/include \
+          -DHWLOC_LIBRARY=/usr/lib/x86_64-linux-gnu/libhwloc.so \
+          -DOPENSSL_ROOT_DIR=/usr \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++
+        make
+
+    - name: Upload ARMv7 build
+      uses: actions/upload-artifact@v3
+      with:
+        name: xmr-armv7
+        path: build/testformycode # 假设编译后的文件名为 testformycode
