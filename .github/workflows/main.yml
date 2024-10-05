@@ -29,7 +29,9 @@ jobs:
           
           # 设置非交互式安装
           ENV DEBIAN_FRONTEND=noninteractive
-          ENV TZ=Etc/UTC  # 设置时区，根据需要调整
+          
+          # 设置时区，根据需要调整
+          ENV TZ=Etc/UTC
 
           RUN apt-get update && \
               apt-get install -y tzdata build-essential cmake git unzip && \
