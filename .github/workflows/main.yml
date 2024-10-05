@@ -40,7 +40,7 @@ jobs:
         cd build
         cmake .. \
           -DBUILD_STATIC=ON \
-          -Dtestformycode_DEPS=<path to precompiled dependencies> \
+          -Dtestformycode_DEPS="" \
           -DARM_TARGET=7 \
           -DUV_INCLUDE_DIR=/usr/include \
           -DUV_LIBRARY=/usr/lib/x86_64-linux-gnu/libuv.so \
