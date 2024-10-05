@@ -47,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v3  # 更新为 v3
         with:
           name: testformycode-armv7
-          path: ./testformycode  # 根据实际路径调整
+          path: ./output/testformycode  # 根据实际路径调整
