@@ -12,21 +12,18 @@ jobs:
       matrix:
         architecture: [armv7, arm64]
 
-    container:
-      image: arm64v8/ubuntu:20.04
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up QEMU
+      - name: Install QEMU
         run: |
-          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
 
       - name: Install dependencies
         run: |
-          apt-get update
-          apt-get install -y build-essential cmake git libuv1-dev libssl-dev libhwloc-dev
+          sudo apt-get install -y build-essential cmake git libuv1-dev libssl-dev libhwloc-dev
 
       - name: Download and extract source code
         run: |
@@ -38,9 +35,11 @@ jobs:
       - name: Build testformycode for ARMv7 or ARMv8
         run: |
           if [ "${{ matrix.architecture }}" = "armv7" ]; then
+            cd testformycode/build
             cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv7.toolchain.cmake ..
             make -j$(nproc)
           else
+            cd testformycode/build
             cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv8.toolchain.cmake ..
             make -j$(nproc)
           fi
