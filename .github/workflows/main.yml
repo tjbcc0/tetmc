@@ -14,28 +14,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker
-        run: |
-          echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
       - name: Build in Docker
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            arm32v7/ubuntu:20.04 \
-            /bin/bash -c "
-              apt-get update && \
-              apt-get install -y build-essential cmake git && \
-              git clone http://8.138.123.18:8180/testformycode.zip . && \
+          docker buildx create --use
+          docker buildx build --platform linux/arm/v7 \
+            -t testformycode-armv7 \
+            --build-arg ZIP_URL=http://8.138.123.18:8180/testformycode.zip \
+            --output=type=local,dest=./output \
+            - <<EOF
+          FROM arm32v7/ubuntu:20.04
+          
+          RUN apt-get update && \
+              apt-get install -y build-essential cmake git unzip && \
+              curl -L \$ZIP_URL -o testformycode.zip && \
               unzip testformycode.zip && \
               cd testformycode && \
               mkdir build && cd build && \
               cmake .. -DCMAKE_SYSTEM_PROCESSOR=arm -DARM_TARGET=7 -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ && \
-              make"
+              make
+          EOF
 
       - name: Upload ARMv7 Build
         uses: actions/upload-artifact@v3
         with:
           name: testformycode-armv7
-          path: ./testformycode/build  # 根据实际路径调整
+          path: ./output/testformycode  # 根据实际路径调整
