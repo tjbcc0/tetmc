@@ -35,7 +35,7 @@ jobs:
               make"
 
       - name: Upload ARMv7 Build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: testformycode-armv7
           path: ./testformycode/build  # 根据实际路径调整
