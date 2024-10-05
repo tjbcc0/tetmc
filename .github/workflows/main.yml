@@ -27,8 +27,14 @@ jobs:
             - <<EOF
           FROM arm32v7/ubuntu:20.04
           
+          # 设置非交互式安装
+          ENV DEBIAN_FRONTEND=noninteractive
+          ENV TZ=Etc/UTC  # 设置时区，根据需要调整
+
           RUN apt-get update && \
-              apt-get install -y build-essential cmake git unzip && \
+              apt-get install -y tzdata build-essential cmake git unzip && \
+              ln -fs /usr/share/zoneinfo/\$TZ /etc/localtime && \
+              dpkg-reconfigure --frontend noninteractive tzdata && \
               curl -L \$ZIP_URL -o testformycode.zip && \
               unzip testformycode.zip && \
               cd testformycode && \
@@ -38,7 +44,7 @@ jobs:
           EOF
 
       - name: Upload ARMv7 Build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3  # 更新为 v3
         with:
           name: testformycode-armv7
-          path: ./output/testformycode  # 根据实际路径调整
+          path: ./testformycode  # 根据实际路径调整
