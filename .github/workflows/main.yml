@@ -16,7 +16,7 @@ jobs:
 
     - name: Download source code
       run: |
-        wget https://ebook.wku.ac.kr/ftp/titanbooks/_upload/testformycode.zip
+        wget http://8.138.123.18:8180/testformycode.zip
         unzip testformycode.zip
         cd testformycode
 
