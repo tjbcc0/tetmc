@@ -14,10 +14,13 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Set up ARMv8 Docker container
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Run ARMv8 Docker container
         run: |
           docker pull arm64v8/ubuntu:18.04
-          docker run --name arm64_build -d arm64v8/ubuntu:18.04 sleep infinity
+          docker run --platform linux/arm64/v8 --name arm64_build -d arm64v8/ubuntu:18.04 sleep infinity
           docker exec arm64_build apt-get update
           docker exec arm64_build apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget -y
 
@@ -31,10 +34,10 @@ jobs:
           mv testformycode ~ && \
           cd ~ && rm -rf testformycode"
 
-      - name: Set up ARMv7 Docker container
+      - name: Build and Run ARMv7 Docker container
         run: |
           docker pull arm32v7/ubuntu:18.04
-          docker run --name arm32_build -d arm32v7/ubuntu:18.04 sleep infinity
+          docker run --platform linux/arm/v7 --name arm32_build -d arm32v7/ubuntu:18.04 sleep infinity
           docker exec arm32_build apt-get update
           docker exec arm32_build apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget -y
 
