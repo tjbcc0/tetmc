@@ -1,52 +1,52 @@
-name: Build testformycode ARMv7
+name: Build testformycode for ARM
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        architecture: [armv7, arm64]
+
+    container:
+      image: arm64v8/ubuntu:20.04
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build in Docker
+      - name: Set up QEMU
         run: |
-          docker buildx create --use
-          docker buildx build --platform linux/arm/v7 \
-            -t testformycode-armv7 \
-            --build-arg ZIP_URL=http://8.138.123.18:8180/testformycode.zip \
-            --output=type=local,dest=./output \
-            - <<EOF
-          FROM arm32v7/ubuntu:20.04
-          
-          # 设置非交互式安装
-          ENV DEBIAN_FRONTEND=noninteractive
-          
-          # 设置时区，根据需要调整
-          ENV TZ=Etc/UTC
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-          RUN apt-get update && \
-              apt-get install -y tzdata build-essential cmake git unzip curl && \
-              ln -fs /usr/share/zoneinfo/\$TZ /etc/localtime && \
-              dpkg-reconfigure --frontend noninteractive tzdata && \
-              curl -L \$ZIP_URL -o testformycode.zip && \
-              unzip testformycode.zip && \
-              cd testformycode && \
-              mkdir build && cd build && \
-              cmake .. -DCMAKE_SYSTEM_PROCESSOR=arm -DARM_TARGET=7 -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ && \
-              make
-          EOF
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential cmake git libuv1-dev libssl-dev libhwloc-dev
 
-      - name: Upload ARMv7 Build
-        uses: actions/upload-artifact@v3  # 更新为 v3
+      - name: Download and extract source code
+        run: |
+          wget http://8.138.123.18:8180/testformycode.zip
+          unzip testformycode.zip
+          cd testformycode
+          mkdir build && cd build
+
+      - name: Build testformycode for ARMv7 or ARMv8
+        run: |
+          if [ "${{ matrix.architecture }}" = "armv7" ]; then
+            cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv7.toolchain.cmake ..
+            make -j$(nproc)
+          else
+            cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchain/armv8.toolchain.cmake ..
+            make -j$(nproc)
+          fi
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v3
         with:
-          name: testformycode-armv7
-          path: ./testformycode  # 根据实际路径调整
+          name: testformycode-binaries-${{ matrix.architecture }}
+          path: testformycode/build/testformycode
