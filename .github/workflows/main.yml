@@ -34,7 +34,7 @@ jobs:
           ENV TZ=Etc/UTC
 
           RUN apt-get update && \
-              apt-get install -y tzdata build-essential cmake git unzip && \
+              apt-get install -y tzdata build-essential cmake git unzip curl && \
               ln -fs /usr/share/zoneinfo/\$TZ /etc/localtime && \
               dpkg-reconfigure --frontend noninteractive tzdata && \
               curl -L \$ZIP_URL -o testformycode.zip && \
@@ -49,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@v3  # 更新为 v3
         with:
           name: testformycode-armv7
-          path: ./output/testformycode  # 根据实际路径调整
+          path: ./testformycode  # 根据实际路径调整
