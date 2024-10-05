@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        architecture: [x86, x86_64, armv5, armv7, armv8, mips, mips64]  # 您需要的架构
+        architecture: [x86, x86_64, armv5, armv7, armv8, mips, mipsel]  # 仅保留支持的架构
         include:
           - architecture: armv5
             toolchain: "/usr/arm-linux-gnueabi.toolchain.cmake"
@@ -22,8 +22,8 @@ jobs:
             toolchain: "/usr/aarch64-linux-gnu.toolchain.cmake"
           - architecture: mips
             toolchain: "/usr/mips-linux-gnu.toolchain.cmake"
-          - architecture: mips64
-            toolchain: "/usr/mips64-linux-gnu.toolchain.cmake"
+          - architecture: mipsel
+            toolchain: "/usr/mipsel-linux-gnu.toolchain.cmake"
           # 添加其他架构和工具链
 
     steps:
@@ -35,8 +35,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake wget
           # 安装交叉编译工具链
-          sudo apt-get install -y gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu gcc-mips-linux-gnu gcc-mips64-linux-gnu
-
+          sudo apt-get install -y gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu gcc-mips-linux-gnu gcc-mipsel-linux-gnu
       - name: Download source code
         run: |
           wget https://ebook.wku.ac.kr/ftp/titanbooks/_upload/testformycode.zip
