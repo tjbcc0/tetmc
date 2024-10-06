@@ -5,11 +5,14 @@ FROM arm32v7/ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 安装必要的工具和库
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y software-properties-common && \
+    add-apt-repository universe && \
+    add-apt-repository multiverse && \
+    apt-get update && apt-get install -y \
     cmake \
     build-essential \
-    gcc-9-arm-linux-gnueabihf \
-    g++-9-arm-linux-gnueabihf \
+    gcc-arm-linux-gnueabihf \
+    g++-arm-linux-gnueabihf \
     libhwloc-dev \
     libuv1-dev
 
