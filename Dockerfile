@@ -11,6 +11,7 @@ RUN apt-get update && \
     cmake \
     git \
     wget \
+    unzip \
     libuv1-dev \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -20,10 +21,12 @@ WORKDIR /testformycode
 
 # 下载源码
 RUN wget -O testformycode.zip http://8.138.123.18:8180/testformycode.zip && \
-    apt-get update && \
-    apt-get install -y unzip && \
     unzip testformycode.zip && \
-    rm testformycode.zip
+    rm testformycode.zip && \
+    cd testformycode
+
+# 列出解压缩后的文件以进行调试
+RUN ls -l /testformycode
 
 # 运行 CMake 并构建项目
 RUN mkdir build && \
