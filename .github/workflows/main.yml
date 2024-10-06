@@ -41,4 +41,4 @@ jobs:
             -v ${{ github.workspace }}/testformycode:/testformycode \
             -w /testformycode \
             testformycode:armv7 \
-            bash -c "cd build && cmake .. && make"
+            bash -c "cd build && cmake .. -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DHWLOC_LIBRARY=/usr/lib/arm-linux-gnueabihf/libhwloc.so -DHWLOC_INCLUDE_DIR=/usr/include/arm-linux-gnueabihf -DUV_LIBRARY=/usr/lib/arm-linux-gnueabihf/libuv.so -DARM_TARGET=7 -DWITH_TLS=OFF && make"
