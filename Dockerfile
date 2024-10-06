@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     gcc-arm-linux-gnueabihf \
     g++-arm-linux-gnueabihf
 
+RUN which arm-linux-gnueabihf-gcc && which arm-linux-gnueabihf-g++
+
 # 下载并解压源码
 RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip && \
     unzip /tmp/testformycode.zip -d / && \
