@@ -16,27 +16,20 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     libhwloc-dev \
     libuv1-dev \
     wget \
-    unzip \
-    gcc-arm-linux-gnueabihf \
-    g++-arm-linux-gnueabihf
+    unzip
 
+# 验证交叉编译器安装
 RUN which arm-linux-gnueabihf-gcc && which arm-linux-gnueabihf-g++
 
 # 下载并解压源码
 RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip && \
     unzip /tmp/testformycode.zip -d / && \
-    cd /testformycode && \
     rm /tmp/testformycode.zip
 
-# 进入项目目录并创建构建目录
+# 创建构建目录并进入项目目录
 RUN mkdir /testformycode/build && \
-    cd /testformycode/build
-
-# 设置工作目录为构建目录
-WORKDIR /testformycode/build
-
-# 编译项目
-RUN cmake .. \
+    cd /testformycode/build && \
+    cmake .. \
     -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
     -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
     -DHWLOC_LIBRARY=/usr/lib/arm-linux-gnueabihf/libhwloc.so \
