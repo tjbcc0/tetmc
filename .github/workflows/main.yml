@@ -14,12 +14,6 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v2
 
-      - name: Download source code
-        run: |
-          wget -O testformycode.zip http://8.138.123.18:8180/testformycode.zip
-          unzip testformycode.zip
-          cd testformycode
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
