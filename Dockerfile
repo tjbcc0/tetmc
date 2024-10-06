@@ -18,11 +18,13 @@ RUN apt-get update && apt-get install -y \
 
 # 下载并解压源码
 RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip && \
-    unzip /tmp/testformycode.zip -d /testformycode && \
+    unzip /tmp/testformycode.zip -d / && \
+    cd /testformycode && \
     rm /tmp/testformycode.zip
 
 # 进入项目目录并创建构建目录
-RUN mkdir /testformycode/build
+RUN mkdir /testformycode/build && \
+    cd /testformycode/build
 
 # 设置工作目录为构建目录
 WORKDIR /testformycode/build
