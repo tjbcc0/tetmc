@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y software-properties-common && \
     g++-arm-linux-gnueabihf \
     libhwloc-dev \
     libuv1-dev \
-    wget
+    wget \
+    unzip
 
 # 下载并解压源码
 RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip && \
