@@ -6,23 +6,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # 安装必要的工具和库
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    git \
-    wget \
-    unzip \
-    pkg-config \
-    libuv1-dev \
-    libhwloc-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
-    arm-linux-gnueabihf-gcc \
-    arm-linux-gnueabihf-g++ \
+    gcc-9-arm-linux-gnueabihf \
+    g++-9-arm-linux-gnueabihf \
     libhwloc-dev \
-    libuv-dev
+    libuv1-dev
 
 # 下载并解压源码
 RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip && \
