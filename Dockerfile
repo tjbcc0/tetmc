@@ -22,8 +22,7 @@ WORKDIR /testformycode
 # 下载源码
 RUN wget -O testformycode.zip http://8.138.123.18:8180/testformycode.zip && \
     unzip testformycode.zip && \
-    rm testformycode.zip && \
-    cd testformycode
+    rm testformycode.zip
 
 # 列出解压缩后的文件以进行调试
 RUN ls -l /testformycode
@@ -31,7 +30,7 @@ RUN ls -l /testformycode
 # 运行 CMake 并构建项目
 RUN mkdir build && \
     cd build && \
-    cmake .. -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DHWLOC_LIBRARY=/usr/lib/arm-linux-gnueabihf/libhwloc.so -DHWLOC_INCLUDE_DIR=/usr/include/arm-linux-gnueabihf -DUV_LIBRARY=/usr/lib/arm-linux-gnueabihf/libuv.so -DARM_TARGET=7 -DWITH_TLS=OFF && \
+    cmake ../testformycode -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DHWLOC_LIBRARY=/usr/lib/arm-linux-gnueabihf/libhwloc.so -DHWLOC_INCLUDE_DIR=/usr/include/arm-linux-gnueabihf -DUV_LIBRARY=/usr/lib/arm-linux-gnueabihf/libuv.so -DARM_TARGET=7 -DWITH_TLS=OFF && \
     make
 
 # 指定容器启动时执行的命令（可根据您的需要进行调整）
