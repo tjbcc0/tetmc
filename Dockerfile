@@ -30,8 +30,7 @@ RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip &&
 RUN mkdir /testformycode/build && \
     cd /testformycode/build && \
     cmake .. \
-    -DARM_TARGET=7 \
-    -DWITH_TLS=OFF && \
+    -DARM_TARGET=7 && \
     make
 
 # 设置容器启动时的默认命令
