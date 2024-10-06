@@ -16,6 +16,14 @@ RUN apt-get update && apt-get install -y \
     libhwloc-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y \
+    cmake \
+    build-essential \
+    arm-linux-gnueabihf-gcc \
+    arm-linux-gnueabihf-g++ \
+    libhwloc-dev \
+    libuv-dev
+
 # 下载并解压源码
 RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip && \
     unzip /tmp/testformycode.zip -d / && \
