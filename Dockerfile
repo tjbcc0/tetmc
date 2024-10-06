@@ -30,11 +30,6 @@ RUN wget http://8.138.123.18:8180/testformycode.zip -O /tmp/testformycode.zip &&
 RUN mkdir /testformycode/build && \
     cd /testformycode/build && \
     cmake .. \
-    -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc \
-    -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++ \
-    -DHWLOC_LIBRARY=/usr/lib/arm-linux-gnueabihf/libhwloc.so \
-    -DHWLOC_INCLUDE_DIR=/usr/include/arm-linux-gnueabihf \
-    -DUV_LIBRARY=/usr/lib/arm-linux-gnueabihf/libuv.so \
     -DARM_TARGET=7 \
     -DWITH_TLS=OFF && \
     make
