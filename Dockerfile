@@ -10,6 +10,7 @@ RUN apt-get update && \
     build-essential \
     cmake \
     git \
+    wget \
     libuv1-dev \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -17,8 +18,11 @@ RUN apt-get update && \
 # 创建工作目录
 WORKDIR /testformycode
 
-# 复制当前目录的内容到容器的工作目录
-COPY . .
+# 下载源码
+RUN wget -O testformycode.zip http://8.138.123.18:8180/testformycode.zip && \
+    apt-get install -y unzip && \
+    unzip testformycode.zip && \
+    rm testformycode.zip
 
 # 运行 CMake 并构建项目
 RUN mkdir build && \
